@@ -34,7 +34,7 @@ function afficher(cls, msg) {
   r.className = cls; r.textContent = msg; r.style.display = 'block';
 }
 
-function valider(code) { afficher('','Vérification...'); var url = URL_SCRIPT + '?c=' + encodeURIComponent(code); fetch(url) .then(function(response){ return response.text(); }) .then(function(text){ afficher('non','Réponse reçue, mais validation non confirmée.'); console .log(text); }) .catch(function(error){ afficher('non','Erreur de communication : ' + error.message); }); }
+function valider(code) { afficher('', 'Test de communication...'); var url = URL_SCRIPT + '?c=' + encodeURIComponent(code); var iframe = document.createElement('iframe'); iframe.style.display = 'none'; iframe.name = 'testAppsScript_' + Date.now(); var form = document.createElement('form'); form.method = 'GET'; form.action = url; form.target = iframe.name; form.style.display = 'none'; document.body.appendChild(iframe); document.body.appendChild(form); afficher('non', 'Requête envoyée. Ce test ne confirme pas encore la validation du ticket.'); form.submit(); setTimeout(function() { form.remove(); iframe.remove(); }, 5000); }
 
 function demarrer() {
   occupe = false;
