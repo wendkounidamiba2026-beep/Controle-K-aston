@@ -34,17 +34,7 @@ function afficher(cls, msg) {
   r.className = cls; r.textContent = msg; r.style.display = 'block';
 }
 
-function valider(code) {
-  afficher('', 'Vérification...');
-  fetch(URL_SCRIPT, { method:'POST', body: new URLSearchParams({c: code}) })
-    .then(function(r){ return r.json(); })
-    .then(function(rep){
-      if (rep.s === 'OK') afficher('ok', 'VALIDE - ' + rep.cat + ' n° ' + rep.num + ' - ' + rep.h);
-      else if (rep.s === 'DEJA') afficher('deja', 'DÉJÀ UTILISÉ à ' + rep.h + ' - ' + rep.cat + ' n° ' + rep.num);
-      else afficher('non', 'TICKET INCONNU');
-    })
-    .catch(function(e){ afficher('non', 'Erreur : ' + e.message); });
-}
+function valider(code) { afficher('','Vérification...'); var url = URL_SCRIPT + '?c=' + encodeURIComponent(code); fetch(url) .then(function(response){ return response.text(); }) .then(function(text){ afficher('non','Réponse reçue, mais validation non confirmée.'); console .log(text); }) .catch(function(error){ afficher('non','Erreur de communication : ' + error.message); }); }
 
 function demarrer() {
   occupe = false;
