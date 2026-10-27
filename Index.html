@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contrôle K Aston</title>
+<style>
+  body { margin:0; font-family:Arial,sans-serif; background:#111; color:#fff; text-align:center; }
+  h2 { margin:12px 0; }
+  #reader { width:100%; max-width:420px; margin:0 auto; }
+  #res { margin:16px auto; padding:20px; max-width:420px; font-size:24px; border-radius:12px; display:none; }
+  .ok { background:#1b8a3a; } .deja { background:#e67e22; } .non { background:#c0392b; }
+  button { font-size:18px; padding:12px 22px; border:none; border-radius:8px; background:#d4af37; margin:8px; }
+</style>
+<script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+<h2>Contrôle d'entrée</h2>
+<div id="reader"></div>
+<div id="res"></div>
+<button onclick="relancer()">Scanner le suivant</button>
+<script>
+var URL_SCRIPT = 'https://script.google.com/macros/s/AKfycby49LZDQ8gPyf3L9ArLBsyCHARVzMekPMHd3CrLaBvatI2mjzsHWCp9X8325unP64p1/exec';
+var scanner = new Html5Qrcode('reader');
+var occupe = false;
+
+function extraire(texte) {
+  var m = texte.match(/[?&]c=([^&]+)/);
+  return m ? decodeURIComponent(m[1]) : texte.trim();
+}
+
+function afficher(cls, msg) {
+  var r = document.getElementById('res');
+  r.className = cls; r.textContent = msg; r.style.display = 'block';
+}
+
+function valider(code) {
+  afficher('', 'Vérification...');
+  fetch(URL_SCRIPT, { method:'POST', body: new URLSearchParams({c: code}) })
+    .then(function(r){ return r.json(); })
+    .then(function(rep){
+      if (rep.s === 'OK') afficher('ok', 'VALIDE - ' + rep.cat + ' n° ' + rep.num + ' - ' + rep.h);
+      else if (rep.s === 'DEJA') afficher('deja', 'DÉJÀ UTILISÉ à ' + rep.h + ' - ' + rep.cat + ' n° ' + rep.num);
+      else afficher('non', 'TICKET INCONNU');
+    })
+    .catch(function(e){ afficher('non', 'Erreur : ' + e.message); });
+}
+
+function demarrer() {
+  occupe = false;
+  scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, function(texte) {
+    if (occupe) return;
+    occupe = true;
+    scanner.stop().then(function(){ valider(extraire(texte)); });
+  });
+}
+
+function relancer() {
+  document.getElementById('res').style.display = 'none';
+  demarrer();
+}
+
+demarrer();
+</script>
+</body>
+</html>
